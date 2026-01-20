@@ -30,7 +30,7 @@
                   var(--bg);
       color: var(--text);
     }
-    .wrap{max-width: 1550px; margin:0 auto; padding:16px;}
+    .wrap{max-width: 1650px; margin:0 auto; padding:16px;}
     @media(min-width:900px){ .wrap{padding:26px;} }
 
     .topbar{
@@ -78,12 +78,9 @@
       background: rgba(239,68,68,.14);
       border-color: rgba(239,68,68,.35);
     }
-    .miniBtns{display:flex; gap:8px; flex-wrap:wrap;}
-    .mini{
-      padding:7px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-family: var(--mono);
+    button.neutral{
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.18);
     }
 
     .grid{
@@ -92,7 +89,7 @@
       grid-template-columns: 1fr;
     }
     @media(min-width:1150px){
-      .grid{ grid-template-columns: 1.25fr .75fr; }
+      .grid{ grid-template-columns: 1.35fr .65fr; }
     }
 
     .panel{
@@ -229,16 +226,18 @@
       flex-wrap:wrap;
     }
     .linklike{opacity:.9; text-decoration:underline; cursor:pointer;}
-
-    .serviceHint{
-      font-size:12px;
-      color: var(--muted);
-      line-height:1.35;
+    .search{display:flex; gap:10px; align-items:center; margin-top:10px;}
+    .rowtools{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      padding:8px 10px; border-radius:999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid var(--border);
+      font-size: 13px;
+      cursor:pointer;
+      user-select:none;
     }
-    .search{
-      display:flex; gap:10px; align-items:center;
-      margin-top:10px;
-    }
+    .toggle input{accent-color: #60a5fa;}
   </style>
 </head>
 <body>
@@ -260,6 +259,7 @@
       </div>
 
       <div class="btnrow">
+        <button class="neutral" id="newDayBtn">Nieuwe dagstart</button>
         <button class="primary" id="toggleEdit">Bewerken</button>
         <button id="saveBtn">Opslaan</button>
         <button class="danger" id="resetBtn">Reset</button>
@@ -272,7 +272,7 @@
         <div class="panel-h">
           <div>
             <h2>Vandaag</h2>
-            <div class="hint">Diensten • pakketjes • bevoorrading • roosteraanpassingen • THT</div>
+            <div class="hint">Alle diensten zichtbaar • vul bezetting in • THT is auto-kleur & gesorteerd</div>
           </div>
           <div class="chips">
             <span class="badge" id="dateBadge">Datum: —</span>
@@ -285,10 +285,17 @@
 
           <!-- Diensten -->
           <div style="margin-top:14px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-              <h3 style="margin:0;">Diensten & bezetting</h3>
-              <span class="hint">Dienst + code • medewerkers • tijd (OK-3 & MD starten 07:00)</span>
+            <div class="rowtools" style="justify-content:space-between;">
+              <div>
+                <h3 style="margin:0;">Diensten & bezetting</h3>
+                <div class="hint">OK-3 en MD starten 07:00 • rest 08:00 (tenzij override)</div>
+              </div>
+              <label class="toggle" title="Handig voor TV-view">
+                <input type="checkbox" id="onlyFilled" />
+                Toon alleen met medewerkers
+              </label>
             </div>
+
             <div class="twrap" style="margin-top:10px;">
               <table>
                 <thead>
@@ -302,29 +309,60 @@
                 <tbody id="serviceTable"></tbody>
               </table>
             </div>
+
+            <!-- Editor diensten -->
+            <div class="editor" id="editorServices">
+              <div class="hint" style="margin-bottom:10px;">
+                Vul per dienst in: medewerkers, (optioneel) tijd override, opmerking.
+              </div>
+              <div class="twrap">
+                <table>
+                  <thead>
+                    <tr class="trow">
+                      <th style="text-align:left;">Code</th>
+                      <th style="text-align:left;">Dienst</th>
+                      <th style="text-align:left;">Medewerkers</th>
+                      <th style="text-align:left;">Tijd override</th>
+                      <th style="text-align:left;">Opmerking</th>
+                    </tr>
+                  </thead>
+                  <tbody id="serviceEditorTable"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
           <div class="twoCol" style="margin-top:14px;">
             <div>
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
                 <h3 style="margin:0;">Roosteraanpassingen</h3>
-                <span class="hint">Wie wisselt / valt uit / extra</span>
+                <span class="hint">Wat | Owner | good/warn/bad</span>
               </div>
               <div class="list" id="rosterList" style="margin-top:10px;"></div>
+
+              <div class="editor" id="editorRoster">
+                <label style="margin-top:10px;">Roosteraanpassingen (1 per regel)</label>
+                <textarea id="inRoster"></textarea>
+              </div>
             </div>
 
             <div>
               <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
                 <h3 style="margin:0;">Actualiteiten / THT</h3>
-                <span class="hint">Auto-sort: urgent bovenaan • rood ≤1 maand • oranje ≤3 maanden</span>
+                <span class="hint">Item | DD-MM-YYYY | Opmerking (auto kleur + sort)</span>
               </div>
               <div class="list" id="thtList" style="margin-top:10px;"></div>
+
+              <div class="editor" id="editorTHT">
+                <label style="margin-top:10px;">THT items (1 per regel)</label>
+                <textarea id="inTHT"></textarea>
+              </div>
             </div>
           </div>
 
-          <!-- Editor main -->
-          <div class="editor" id="editorMain">
-            <div class="formgrid">
+          <!-- Editor header -->
+          <div class="editor" id="editorHeader">
+            <div class="formgrid" style="margin-top:12px;">
               <div>
                 <label>Dashboard titel</label>
                 <input id="inTitle" type="text" />
@@ -341,40 +379,6 @@
                 <label>Datum (optioneel)</label>
                 <input id="inDate" type="date" />
               </div>
-
-              <div style="grid-column:1 / -1;">
-                <label>
-                  Diensten (1 per regel) — formaat:<br/>
-                  <span style="font-family:var(--mono);">Code | Medewerker1, Medewerker2 | Tijd | Opmerking</span>
-                </label>
-                <div class="serviceHint">
-                  Laat je <b>Tijd</b> leeg, dan vult het systeem automatisch in:
-                  <b>OK-3</b> en <b>MD</b> → <b>07:00–15:30</b>, alles anders → <b>08:00–16:30</b>.
-                </div>
-                <div class="miniBtns" style="margin:10px 0 6px;">
-                  <button class="mini" type="button" id="setTimeAuto">Zet tijd: auto</button>
-                  <button class="mini" type="button" id="setTimeEarly">Zet tijd: 07:00–15:30</button>
-                  <button class="mini" type="button" id="setTimeLate">Zet tijd: 08:00–16:30</button>
-                </div>
-                <textarea id="inServices"></textarea>
-              </div>
-
-              <div style="grid-column:1 / -1;">
-                <label>
-                  Roosteraanpassingen (1 per regel) — formaat:<br/>
-                  <span style="font-family:var(--mono);">Wat | Owner (optioneel) | Status (good/warn/bad)</span>
-                </label>
-                <textarea id="inRoster"></textarea>
-              </div>
-
-              <div style="grid-column:1 / -1;">
-                <label>
-                  THT / Actualiteiten (1 per regel) — formaat:<br/>
-                  <span style="font-family:var(--mono);">Item | THT (DD-MM-YYYY) | Opmerking (optioneel)</span><br/>
-                  <span class="hint">Kleur + sortering wordt automatisch berekend o.b.v. THT.</span>
-                </label>
-                <textarea id="inTHT"></textarea>
-              </div>
             </div>
           </div>
 
@@ -386,7 +390,7 @@
         <div class="panel-h">
           <div>
             <h2>Logistiek</h2>
-            <div class="hint">Pakketjes • bevoorrading • dienstenlijst</div>
+            <div class="hint">Pakketjes • bevoorrading • notities • dienstenlijst</div>
           </div>
           <div class="chips">
             <span class="badge">Doordeweeks</span>
@@ -426,7 +430,7 @@
                   <option value="bad">bad</option>
                 </select>
               </div>
-              <div>
+              <div style="grid-column:1 / -1;">
                 <label>Pakketjes detail</label>
                 <input id="inPkgDetail" type="text" placeholder="bijv. 30 inkomend / 12 uitgaand" />
               </div>
@@ -444,13 +448,13 @@
                   <option value="bad">bad</option>
                 </select>
               </div>
-              <div>
+              <div style="grid-column:1 / -1;">
                 <label>Bevoorrading detail</label>
                 <input id="inSupplyDetail" type="text" placeholder="bijv. 3 leveringen / 3 picks" />
               </div>
 
               <div style="grid-column:1 / -1;">
-                <label>Notities (vrij tekstveld)</label>
+                <label>Notities</label>
                 <textarea id="inNotes" placeholder="Wat moeten we vandaag niet vergeten?"></textarea>
               </div>
             </div>
@@ -477,19 +481,17 @@
     </div>
 
     <div class="footer">
-      <div>Opslaan gebeurt lokaal in de browser (localStorage). Handig op één vaste dagstart-PC/TV.</div>
+      <div>Opslaan is lokaal op de browser/PC (localStorage).</div>
       <div class="linklike" id="exportBtn">Export JSON</div>
     </div>
   </div>
 
 <script>
-  const LS_KEY = "dagstart_dashboard_weekdays_v3";
+  const LS_KEY = "dagstart_dashboard_allservices_v2";
 
-  // Diensten + codes (uit jouw lijst)
   const SERVICES = [
     { name:"OC vroeg", code:"OC-V" },
     { name:"OC ondersteuning", code:"OC-O" },
-
     { name:"WKZ - Panda/Papegaai", code:"W-PP" },
     { name:"WKZ - Kameleon/Schildpad", code:"W-KS" },
     { name:"WKZ - Verloskunde", code:"W-V" },
@@ -497,7 +499,6 @@
     { name:"WKZ - Neonatologie", code:"W-N" },
     { name:"WKZ - Pelikaan/Leeuw", code:"W-PL" },
     { name:"WKZ - Overig", code:"W-Ov" },
-
     { name:"UMC - C2 west en D2 oost/west", code:"CD2" },
     { name:"UMC - C3 oost/west en D3 west", code:"CD3" },
     { name:"UMC - MDL/Dialyse", code:"MD" },
@@ -506,18 +507,15 @@
     { name:"UMC - B4 oost/B4 west", code:"B4" },
     { name:"UMC - B2/B5", code:"B25" },
     { name:"UMC - C4/C5/D5", code:"CD45" },
-
     { name:"OK 1 (F.00)", code:"OK-1" },
     { name:"OK 2 (F.04)", code:"OK-2" },
     { name:"OK 3 (OMLOOP)", code:"OK-3" },
     { name:"OK 4 (WKZ)", code:"OK-4" },
     { name:"IC1", code:"IC-A" },
     { name:"IC2", code:"IC-B" },
-
     { name:"UMC - AB-B", code:"AB-B" },
     { name:"UMC - AB-C", code:"AB-C" },
     { name:"UMC - AB-D", code:"AB-D" },
-
     { name:"WKZ-Bode", code:"W-Bo" },
     { name:"UMC-Bode", code:"U-Bo" },
     { name:"UMC-Bode 2", code:"U-Bo2" },
@@ -528,36 +526,20 @@
     { name:"Inwerken", code:"INW" },
   ];
 
-  const codeToName = new Map(SERVICES.map(s => [String(s.code).toUpperCase(), s.name]));
-
-  // Default invulling (pas aan in bewerkmodus)
   const DEFAULT = {
     title: "Dagstart Dashboard",
     subtitle: "Doordeweeks overzicht",
     team: "Team —",
     date: "",
+    onlyFilled: false,
 
     packages: { total: "", status: "", detail: "—" },
     supply:   { total: "", status: "", detail: "—" },
     notes: "",
 
-    // Code | Medewerkers | Tijd (mag leeg) | Opmerking
-    services: [
-      "OK-3 | |  |",
-      "MD   | |  |",
-      "CD2  | |  |",
-    ],
-
-    // Wat | Owner (opt) | good/warn/bad
-    rosterChanges: [
-      "Wissel: — | | warn"
-    ],
-
-    // Item | DD-MM-YYYY | Opmerking (opt)
-    tht: [
-      "Artikel X | 25-01-2026 |",
-      "Artikel Y | 22-03-2026 |",
-    ],
+    assignments: {},   // code -> { people, timeOverride, note }
+    rosterChanges: [],
+    tht: [],
   };
 
   function loadState(){
@@ -565,7 +547,7 @@
       const raw = localStorage.getItem(LS_KEY);
       if(!raw) return structuredClone(DEFAULT);
       const s = JSON.parse(raw);
-      return { ...structuredClone(DEFAULT), ...s };
+      return { ...structuredClone(DEFAULT), ...s, assignments: { ...(structuredClone(DEFAULT).assignments), ...(s.assignments||{}) } };
     }catch{
       return structuredClone(DEFAULT);
     }
@@ -574,13 +556,10 @@
 
   function el(id){ return document.getElementById(id); }
   function setText(id, v){ el(id).textContent = v; }
-
-  function parseLines(text){ return (text||"").split("\n").map(x=>x.trim()).filter(Boolean); }
   function safeStatus(s){
     s = (s||"").toLowerCase().trim();
     return (s==="good"||s==="warn"||s==="bad") ? s : "";
   }
-
   function escapeHtml(str){
     return String(str)
       .replaceAll("&","&amp;")
@@ -589,13 +568,16 @@
       .replaceAll("\"","&quot;")
       .replaceAll("'","&#039;");
   }
+  function defaultTimeForCode(code){
+    const c = String(code||"").toUpperCase().trim();
+    return (c==="OK-3" || c==="MD") ? "07:00–15:30" : "08:00–16:30";
+  }
 
-  // --- THT: parse DD-MM-YYYY (en accepteer ook YYYY-MM-DD als fallback) ---
+  // --- THT ---
   function parseDateFlexible(s){
     s = (s || "").trim();
     if(!s) return null;
 
-    // DD-MM-YYYY
     const dmy = /^(\d{2})-(\d{2})-(\d{4})$/;
     const m1 = s.match(dmy);
     if(m1){
@@ -603,11 +585,10 @@
       const mm = parseInt(m1[2], 10);
       const yyyy = parseInt(m1[3], 10);
       const d = new Date(yyyy, mm - 1, dd);
-      if(d.getFullYear() === yyyy && d.getMonth() === (mm - 1) && d.getDate() === dd) return d;
+      if(d.getFullYear()===yyyy && d.getMonth()===(mm-1) && d.getDate()===dd) return d;
       return null;
     }
 
-    // YYYY-MM-DD fallback
     const ymd = /^(\d{4})-(\d{2})-(\d{2})$/;
     const m2 = s.match(ymd);
     if(m2){
@@ -615,10 +596,9 @@
       const mm = parseInt(m2[2], 10);
       const dd = parseInt(m2[3], 10);
       const d = new Date(yyyy, mm - 1, dd);
-      if(d.getFullYear() === yyyy && d.getMonth() === (mm - 1) && d.getDate() === dd) return d;
+      if(d.getFullYear()===yyyy && d.getMonth()===(mm-1) && d.getDate()===dd) return d;
       return null;
     }
-
     return null;
   }
 
@@ -631,7 +611,6 @@
     d.setHours(0,0,0,0);
 
     const diffDays = Math.floor((d.getTime() - today.getTime()) / (1000*60*60*24));
-
     if(diffDays < 0) return { status:"bad", label:`VERLOPEN (${Math.abs(diffDays)}d)`, date:d };
     if(diffDays <= 30) return { status:"bad", label:`≤1 maand (${diffDays}d)`, date:d };
     if(diffDays <= 90) return { status:"warn", label:`≤3 maanden (${diffDays}d)`, date:d };
@@ -645,17 +624,17 @@
     return b;
   }
 
-  // --- Diensttijden auto: OK-3 en MD vroeg, rest laat ---
-  function defaultTimeForCode(code){
-    const c = String(code || "").toUpperCase().trim();
-    return (c === "OK-3" || c === "MD") ? "07:00–15:30" : "08:00–16:30";
-  }
-
   function renderKPIs(state){
+    const filledCount = SERVICES.reduce((acc, s) => {
+      const a = state.assignments?.[s.code] || {};
+      const people = String(a.people||"").trim();
+      return acc + (people ? 1 : 0);
+    }, 0);
+
     const kpis = [
       { label:"Pakketjes", value: state.packages.total!=="" ? String(state.packages.total) : "—", status: safeStatus(state.packages.status), small: state.packages.detail || "" },
       { label:"Bevoorrading", value: state.supply.total!=="" ? String(state.supply.total) : "—", status: safeStatus(state.supply.status), small: state.supply.detail || "" },
-      { label:"Rooster wijzigingen", value: String((state.rosterChanges||[]).length), status: ((state.rosterChanges||[]).length>0 ? "warn" : "good"), small: "Aantal items" }
+      { label:"Bezetting ingevuld", value: `${filledCount}/${SERVICES.length}`, status: (filledCount===0 ? "warn" : "good"), small: "Diensten met medewerkers" }
     ];
 
     const row = el("kpiRow");
@@ -672,31 +651,61 @@
     });
   }
 
-  function renderServices(state){
+  function renderServicesTable(state){
     const tb = el("serviceTable");
     tb.innerHTML = "";
+    const onlyFilled = !!state.onlyFilled;
 
-    (state.services||[]).forEach(line => {
-      const parts = line.split("|").map(x=>x.trim());
-      const rawCode = parts[0] || "—";
-      const code = rawCode.toUpperCase();
-      const svcName = codeToName.get(code) || "Onbekend";
-      const names = parts[1] || "—";
+    SERVICES.forEach(s => {
+      const a = state.assignments?.[s.code] || {};
+      const people = String(a.people||"").trim();
+      const timeOverride = String(a.timeOverride||"").trim();
+      const note = String(a.note||"").trim();
+      if(onlyFilled && !people) return;
 
-      const rawTime = parts[2] || "";
-      const time = rawTime ? rawTime : defaultTimeForCode(code);
-
-      const note  = parts[3] || "—";
+      const time = timeOverride ? timeOverride : defaultTimeForCode(s.code);
 
       const tr = document.createElement("tr");
       tr.className = "trow";
       tr.innerHTML = `
-        <td>${escapeHtml(code)} <span style="color: var(--muted); font-weight:500;">• ${escapeHtml(svcName)}</span></td>
-        <td style="color: var(--muted);">${escapeHtml(names)}</td>
+        <td>${escapeHtml(s.code)} <span style="color: var(--muted); font-weight:500;">• ${escapeHtml(s.name)}</span></td>
+        <td style="color: var(--muted);">${escapeHtml(people || "—")}</td>
         <td style="font-family: var(--mono);">${escapeHtml(time)}</td>
-        <td style="color: var(--muted);">${escapeHtml(note)}</td>
+        <td style="color: var(--muted);">${escapeHtml(note || "—")}</td>
       `;
       tb.appendChild(tr);
+    });
+  }
+
+  function renderServicesEditor(state){
+    const tb = el("serviceEditorTable");
+    tb.innerHTML = "";
+
+    SERVICES.forEach(s => {
+      const a = state.assignments?.[s.code] || {};
+      const people = String(a.people||"");
+      const timeOverride = String(a.timeOverride||"");
+      const note = String(a.note||"");
+
+      const tr = document.createElement("tr");
+      tr.className = "trow";
+      tr.innerHTML = `
+        <td style="font-family: var(--mono);">${escapeHtml(s.code)}</td>
+        <td>${escapeHtml(s.name)}</td>
+        <td><input type="text" data-code="${escapeHtml(s.code)}" data-field="people" value="${escapeHtml(people)}" placeholder="Namen..." /></td>
+        <td><input type="text" data-code="${escapeHtml(s.code)}" data-field="timeOverride" value="${escapeHtml(timeOverride)}" placeholder="${escapeHtml(defaultTimeForCode(s.code))}" /></td>
+        <td><input type="text" data-code="${escapeHtml(s.code)}" data-field="note" value="${escapeHtml(note)}" placeholder="—" /></td>
+      `;
+      tb.appendChild(tr);
+    });
+
+    tb.querySelectorAll("input").forEach(inp => {
+      inp.addEventListener("input", (e) => {
+        const code = e.target.getAttribute("data-code");
+        const field = e.target.getAttribute("data-field");
+        if(!state.assignments[code]) state.assignments[code] = { people:"", timeOverride:"", note:"" };
+        state.assignments[code][field] = e.target.value;
+      });
     });
   }
 
@@ -711,75 +720,52 @@
 
       const item = document.createElement("div");
       item.className = "item";
-
-      const left = document.createElement("div");
-      left.className = "left";
-      left.innerHTML = `
-        <p class="title">${escapeHtml(title)}</p>
-        ${owner ? `<p class="meta">Owner: ${escapeHtml(owner)}</p>` : ``}
+      item.innerHTML = `
+        <div class="left">
+          <p class="title">${escapeHtml(title)}</p>
+          ${owner ? `<p class="meta">Owner: ${escapeHtml(owner)}</p>` : ``}
+        </div>
+        <div>${mkBadge(status ? status.toUpperCase() : "—", status).outerHTML}</div>
       `;
-
-      const right = document.createElement("div");
-      right.appendChild(mkBadge(status ? status.toUpperCase() : "—", status));
-
-      item.appendChild(left);
-      item.appendChild(right);
       box.appendChild(item);
     });
   }
 
-  // THT: render + AUTO SORT (urgent bovenaan)
   function renderTHT(lines){
     const box = el("thtList");
     box.innerHTML = "";
 
-    // Parse each line and compute status/date
-    const parsed = (lines||[]).map((line, originalIndex) => {
+    const parsed = (lines||[]).map((line, idx) => {
       const parts = line.split("|").map(x=>x.trim());
       const itemName = parts[0] || "—";
       const dateStr  = parts[1] || "";
       const note     = parts[2] || "";
       const st = thtStatus(dateStr);
-
-      // sortKey: invalid dates go last
       const sortKey = st.date ? st.date.getTime() : Number.POSITIVE_INFINITY;
-
-      return { line, originalIndex, itemName, dateStr, note, st, sortKey };
+      return { idx, itemName, dateStr, note, st, sortKey };
     });
 
-    // Sort by date asc (earliest first). Keep stable order for equal keys via originalIndex.
-    parsed.sort((a,b) => (a.sortKey - b.sortKey) || (a.originalIndex - b.originalIndex));
+    parsed.sort((a,b) => (a.sortKey - b.sortKey) || (a.idx - b.idx));
 
     parsed.forEach(p => {
       const item = document.createElement("div");
       item.className = "item";
-
-      const left = document.createElement("div");
-      left.className = "left";
-      left.innerHTML = `
-        <p class="title">${escapeHtml(p.itemName)}</p>
-        <p class="meta">THT: ${escapeHtml(p.dateStr || "—")}${p.note ? ` • ${escapeHtml(p.note)}` : ""}</p>
+      item.innerHTML = `
+        <div class="left">
+          <p class="title">${escapeHtml(p.itemName)}</p>
+          <p class="meta">THT: ${escapeHtml(p.dateStr || "—")}${p.note ? ` • ${escapeHtml(p.note)}` : ""}</p>
+        </div>
+        <div>${mkBadge(p.st.label, p.st.status).outerHTML}</div>
       `;
-
-      const right = document.createElement("div");
-      right.appendChild(mkBadge(p.st.label, p.st.status));
-
-      item.appendChild(left);
-      item.appendChild(right);
       box.appendChild(item);
     });
   }
 
-  // Services directory search panel
   function renderServiceDirectory(query){
     const q = (query||"").toLowerCase().trim();
     const list = el("svcList");
     list.innerHTML = "";
-
-    const filtered = SERVICES.filter(s => {
-      if(!q) return true;
-      return s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q);
-    }).slice(0, 60);
+    const filtered = SERVICES.filter(s => !q || s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)).slice(0, 60);
 
     filtered.forEach(s => {
       const item = document.createElement("div");
@@ -802,6 +788,15 @@
     }
   }
 
+  // Helpers
+  function todayISO(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const dd = String(d.getDate()).padStart(2,"0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   // UI state
   let state = loadState();
   let editMode = false;
@@ -811,8 +806,8 @@
     el("inSubtitle").value = state.subtitle;
     el("inTeam").value = state.team;
     el("inDate").value = state.date || "";
+    el("onlyFilled").checked = !!state.onlyFilled;
 
-    el("inServices").value = (state.services||[]).join("\n");
     el("inRoster").value = (state.rosterChanges||[]).join("\n");
     el("inTHT").value = (state.tht||[]).join("\n");
 
@@ -832,10 +827,10 @@
     state.subtitle = el("inSubtitle").value.trim() || DEFAULT.subtitle;
     state.team = el("inTeam").value.trim() || DEFAULT.team;
     state.date = el("inDate").value || "";
+    state.onlyFilled = !!el("onlyFilled").checked;
 
-    state.services = parseLines(el("inServices").value);
-    state.rosterChanges = parseLines(el("inRoster").value);
-    state.tht = parseLines(el("inTHT").value);
+    state.rosterChanges = (el("inRoster").value||"").split("\n").map(x=>x.trim()).filter(Boolean);
+    state.tht = (el("inTHT").value||"").split("\n").map(x=>x.trim()).filter(Boolean);
 
     state.packages = {
       total: el("inPkg").value === "" ? "" : Number(el("inPkg").value),
@@ -859,10 +854,11 @@
     setText("dateBadge", `Datum: ${shownDate.toLocaleDateString("nl-NL")}`);
 
     renderKPIs(state);
-    renderServices(state);
+    renderServicesTable(state);
     renderRoster(state.rosterChanges);
     renderTHT(state.tht);
 
+    // right tiles
     el("pkgTile").className = "tile " + safeStatus(state.packages.status);
     setText("pkgValue", state.packages.total !== "" ? String(state.packages.total) : "—");
     setText("pkgSmall", state.packages.detail || "—");
@@ -873,10 +869,17 @@
 
     el("notesView").textContent = state.notes ? state.notes : "—";
 
-    el("editorMain").classList.toggle("on", editMode);
+    // editor toggles
+    el("editorHeader").classList.toggle("on", editMode);
     el("editorSide").classList.toggle("on", editMode);
+    el("editorRoster").classList.toggle("on", editMode);
+    el("editorTHT").classList.toggle("on", editMode);
+    el("editorServices").classList.toggle("on", editMode);
+
     setText("modeLabel", editMode ? "Edit" : "View");
     el("dotEdit").className = "dot " + (editMode ? "warn" : "");
+
+    if(editMode) renderServicesEditor(state);
   }
 
   function tick(){
@@ -889,7 +892,44 @@
     el("dotLive").className = "dot good";
   }
 
-  // Buttons
+  // Nieuwe dagstart: wis dagdata, behoud titel/subtitel/team + onlyFilled
+  function newDaystart(){
+    const keep = {
+      title: state.title,
+      subtitle: state.subtitle,
+      team: state.team,
+      onlyFilled: state.onlyFilled
+    };
+
+    // reset dag-inhoud
+    state.packages = { total:"", status:"", detail:"—" };
+    state.supply   = { total:"", status:"", detail:"—" };
+    state.notes = "";
+    state.rosterChanges = [];
+    state.tht = [];
+    state.assignments = {};  // alles leeg
+
+    // datum op vandaag
+    state.date = todayISO();
+
+    // behoud header settings
+    state.title = keep.title;
+    state.subtitle = keep.subtitle;
+    state.team = keep.team;
+    state.onlyFilled = keep.onlyFilled;
+
+    saveState(state);
+    render();
+    alert("Nieuwe dagstart klaar ✅ (daggegevens zijn gewist)");
+  }
+
+  // Events
+  el("newDayBtn").addEventListener("click", () => {
+    if(confirm("Nieuwe dagstart starten? Dit wist bezetting/pakketjes/bevoorrading/rooster/THT/notities.")){
+      newDaystart();
+    }
+  });
+
   el("toggleEdit").addEventListener("click", () => {
     editMode = !editMode;
     if(editMode) applyStateToInputs();
@@ -904,7 +944,7 @@
   });
 
   el("resetBtn").addEventListener("click", () => {
-    if(confirm("Reset naar demo-inhoud?")){
+    if(confirm("Alles resetten naar leeg (incl. titel/team)?")){
       localStorage.removeItem(LS_KEY);
       state = loadState();
       editMode = false;
@@ -922,44 +962,12 @@
     URL.revokeObjectURL(url);
   });
 
-  // Time helper buttons for editor
-  function setTimeForEmptyLines(timeStr){
-    const t = el("inServices");
-    const lines = parseLines(t.value);
-    const updated = lines.map(line => {
-      const parts = line.split("|").map(x=>x.trim());
-      const code = parts[0] || "";
-      const names = parts[1] || "";
-      const time = parts[2] || "";
-      const note = parts[3] || "";
-      const newTime = time ? time : timeStr;
-      return `${code} | ${names} | ${newTime} | ${note}`;
-    });
-    t.value = updated.join("\n");
-  }
+  el("onlyFilled").addEventListener("change", () => {
+    state.onlyFilled = el("onlyFilled").checked;
+    saveState(state);
+    render();
+  });
 
-  function setTimeAutoForEmptyLines(){
-    const t = el("inServices");
-    const lines = parseLines(t.value);
-    const updated = lines.map(line => {
-      const parts = line.split("|").map(x=>x.trim());
-      const rawCode = parts[0] || "";
-      const codeU = rawCode.toUpperCase();
-      const names = parts[1] || "";
-      const time = parts[2] || "";
-      const note = parts[3] || "";
-      const auto = defaultTimeForCode(codeU);
-      const newTime = time ? time : auto;
-      return `${rawCode} | ${names} | ${newTime} | ${note}`;
-    });
-    t.value = updated.join("\n");
-  }
-
-  el("setTimeAuto").addEventListener("click", () => setTimeAutoForEmptyLines());
-  el("setTimeEarly").addEventListener("click", () => setTimeForEmptyLines("07:00–15:30"));
-  el("setTimeLate").addEventListener("click", () => setTimeForEmptyLines("08:00–16:30"));
-
-  // Service search
   el("svcSearch").addEventListener("input", (e) => renderServiceDirectory(e.target.value));
 
   // Init
